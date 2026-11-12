@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم ماركت أدم</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="css/print.css">
+</head>
+<body data-page="admin">
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="ico">🛒</div>
+      <h1>ماركت <span>أدم</span></h1>
+      <p>لوحة تحكم المشرف</p>
+    </div>
+    <div class="login-error" id="loginError">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+    <div class="login-field"><label>اسم المستخدم</label><input type="text" id="loginUser" placeholder="admin"></div>
+    <div class="login-field"><label>كلمة المرور</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+    <button class="login-btn" id="loginBtn">دخول</button>
+    <div class="login-hint">الافتراضي: <code>admin</code> / <code>1234</code></div>
+  </div>
+</div>
+
+<div id="adminApp" style="display:none;">
+<header class="app-header">
+  <div class="logo-area">
+    <div class="logo-icon">🛒</div>
+    <div class="logo-text">ماركت <span>أدم</span> — لوحة التحكم</div>
+  </div>
+  <div class="header-controls">
+    <div class="rate-badge">💱 1$ = <span id="rateBadgeValue">15000</span> ل.س</div>
+    <button class="icon-btn" id="soundToggleBtn" title="تشغيل/كتم الصوت">🔊</button>
+    <button class="icon-btn" id="notifBtn">🔔 <span id="notifCount" class="badge-danger">0</span></button>
+    <a href="#" class="icon-btn" id="ordersQuickBtn" style="position:relative;">
+      🧾 <span id="ordersCountBadge" class="badge-new" style="display:none;">0</span>
+    </a>
+    <a href="index.html" class="icon-btn">🛍️ واجهة الزبون</a>
+    <button class="icon-btn logout" id="logoutBtn">🚪 خروج</button>
+  </div>
+</header>
+
+<div class="panel" id="adminPanel" style="display:block;">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="productsTab">📦 المنتجات</button>
+    <button class="tab-btn" data-tab="categoriesTab">🗂️ الفئات</button>
+    <button class="tab-btn" data-tab="rateTab">💱 سعر الصرف</button>
+    <button class="tab-btn" data-tab="shippingTab">🚚 الشحن</button>
+    <button class="tab-btn" data-tab="statsTab">📊 الإحصائيات</button>
+    <button class="tab-btn" data-tab="profitTab">💰 الأرباح</button>
+    <button class="tab-btn" data-tab="settingsTab">⚙️ الإعدادات</button>
+    <button class="tab-btn" data-tab="invoiceTab">🧾 الفاتورة</button>
+    <button class="tab-btn" data-tab="priceListTab">📋 لائحة الأسعار</button>
+    <button class="tab-btn" data-tab="notifsTab">🔔 الإشعارات</button>
+    <button class="tab-btn" data-tab="ordersTab">🧾 الطلبات</button>
+  </div>
+
+  <!-- المنتجات -->
+  <div class="tab-content active" id="productsTab">
+    <div class="form-row">
+      <div class="form-group"><label>اسم المنتج</label><input type="text" id="newProductName"></div>
+      <div class="form-group"><label>الوحدة</label><input type="text" id="newProductUnit"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>سعر الشراء ($)</label><input type="number" id="newProductCost" step="0.01" min="0"></div>
+      <div class="form-group"><label>سعر البيع ($)</label><input type="number" id="newProductPrice" step="0.01" min="0"></div>
+      <div class="form-group"><label>المخزون</label><input type="number" id="newProductStock" step="1" min="0" value="100"></div>
+      <div class="form-group"><label>الفئة</label><select id="newProductCategory"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1 1 100%;"><label>كود المنتج</label><input type="text" id="newProductCode" placeholder="AUTO" style="font-family:monospace;"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1 1 100%;">
+        <label>صورة المنتج</label>
+        <div class="image-upload-area" id="newProductImageArea">
+          <input type="file" id="newProductImage" accept="image/*">
+          <div style="font-size:2rem;">📷</div>
+          <div class="upload-label">اضغط لاختيار صورة</div>
+          <img id="newProductImagePreview" class="image-preview" alt="معاينة">
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="addProductBtn">➕ إضافة منتج</button>
+    <h4 style="margin-top:20px;">📋 قائمة المنتجات</h4>
+    <div style="overflow-x:auto;">
+      <table id="productsTable">
+        <thead><tr><th>الصورة</th><th>الكود</th><th>الاسم</th><th>الفئة</th><th>الشراء ($)</th><th>البيع ($)</th><th>المخزون</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- الفئات -->
+  <div class="tab-content" id="categoriesTab">
+    <div class="form-row">
+      <div class="form-group"><label>اسم الفئة</label><input type="text" id="newCategoryName"></div>
+      <div class="form-group"><label>الرمز</label><input type="text" id="newCategoryEmoji" maxlength="4" placeholder="🫘"></div>
+    </div>
+    <button class="btn btn-primary" id="addCategoryBtn">➕ إضافة فئة</button>
+    <h4 style="margin-top:20px;">🗂️ الفئات</h4>
+    <table id="categoriesTable">
+      <thead><tr><th>الرمز</th><th>الاسم</th><th>عدد المنتجات</th><th>إجراءات</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- سعر الصرف -->
+  <div class="tab-content" id="rateTab">
+    <div class="rate-box">
+      <h4>💱 سعر الصرف</h4>
+      <div class="rate-input-group">
+        <label>1 دولار =</label>
+        <input type="number" id="exchangeRateInput" step="1" min="1" value="15000">
+        <label>ل.س</label>
+      </div>
+      <div class="rate-preview" id="ratePreview"></div>
+      <button class="btn btn-primary" id="saveRateBtn" style="margin-top:14px;">💾 حفظ</button>
+    </div>
+  </div>
+
+  <!-- الشحن -->
+  <div class="tab-content" id="shippingTab">
+    <div class="rate-box" style="background:#fff8e1;border-color:#ffb74d;">
+      <h4>🚚 إعدادات الشحن</h4>
+      <div class="form-row">
+        <div class="form-group"><label>حد الشحن المجاني (ل.س)</label><input type="number" id="shippingThresholdInput" value="100000"></div>
+        <div class="form-group"><label>رسوم الشحن (ل.س)</label><input type="number" id="shippingFeeInput" value="15000"></div>
+      </div>
+      <button class="btn btn-primary" id="saveShippingBtn">💾 حفظ</button>
+    </div>
+  </div>
+
+  <!-- الإحصائيات -->
+  <div class="tab-content" id="statsTab">
+    <div class="stats-grid" id="statsGrid"></div>
+    <h4>🏆 المنتجات الأكثر مبيعاً</h4>
+    <table id="topProductsTable">
+      <thead><tr><th>#</th><th>المنتج</th><th>الكمية المباعة</th><th>الإيراد (ل.س)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <h4>👑 الزبائن الأكثر شراءً</h4>
+    <table id="topCustomersTable">
+      <thead><tr><th>#</th><th>الزبون</th><th>الهاتف</th><th>عدد الطلبات</th><th>الإجمالي (ل.س)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- الأرباح -->
+  <div class="tab-content" id="profitTab">
+    <div class="rate-box" style="background:#e8f5e9;">
+      <h4>💰 حساب الأرباح</h4>
+      <div class="form-row">
+        <div class="form-group"><label>من تاريخ</label><input type="date" id="profitFrom"></div>
+        <div class="form-group"><label>إلى تاريخ</label><input type="date" id="profitTo"></div>
+      </div>
+      <button class="btn btn-primary" id="calcProfitBtn">📊 احسب الأرباح</button>
+    </div>
+    <div class="profit-summary" id="profitSummary"></div>
+    <h4>📅 الأرباح اليومية</h4>
+    <table id="dailyProfitTable">
+      <thead><tr><th>التاريخ</th><th>عدد الطلبات</th><th>الإيراد (ل.س)</th><th>التكلفة (ل.س)</th><th>الربح (ل.س)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- الإعدادات -->
+  <div class="tab-content" id="settingsTab">
+    <div class="rate-box">
+      <h4>📱 رقم الواتساب المستلم</h4>
+      <div class="form-group">
+        <label>رقم الواتساب (مع رمز الدولة بدون +)</label>
+        <input type="text" id="whatsappNumberInput" placeholder="963992051940" style="max-width:300px;">
+        <small>مثال: 963992051940</small>
+      </div>
+      <button class="btn btn-primary" id="saveWhatsappBtn">💾 حفظ</button>
+    </div>
+    <div class="rate-box" style="margin-top:16px;">
+      <h4>🔔 إعدادات الإشعارات</h4>
+      <div class="form-group">
+        <label>تنبيه المخزون المنخفض (أقل من)</label>
+        <input type="number" id="lowStockInput" value="10" style="max-width:200px;">
+      </div>
+      <button class="btn btn-primary" id="saveNotifBtn">💾 حفظ</button>
+    </div>
+  </div>
+
+  <!-- الفاتورة -->
+  <div class="tab-content" id="invoiceTab">
+    <div class="designer-grid">
+      <div>
+        <div class="designer-card">
+          <h4>🏪 هوية المتجر</h4>
+          <div class="form-group"><label>اسم المتجر</label><input type="text" id="invStoreName" value="ماركت أدم"></div>
+          <div class="form-group"><label>وصف مختصر</label><input type="text" id="invStoreTagline" value="متجر إلكتروني - بيع البقوليات والمعلبات"></div>
+          <div class="form-row">
+            <div class="form-group"><label>الهاتف</label><input type="text" id="invStorePhone" value="+963 992 051 940"></div>
+            <div class="form-group"><label>العنوان</label><input type="text" id="invStoreAddress" value="سوريا"></div>
+          </div>
+          <div class="form-group"><label>نص الشعار</label><input type="text" id="invLogoText" value="🛒"></div>
+          <div class="form-group"><label>صورة الشعار</label><input type="file" id="invLogoImage" accept="image/*"></div>
+        </div>
+        <div class="designer-card">
+          <h4>🎨 الألوان</h4>
+          <div class="color-row"><label>اللون الأساسي</label><input type="color" id="invAccentColor" value="#2e7d32"></div>
+          <div class="color-row"><label>اللون الداكن</label><input type="color" id="invDarkColor" value="#1e2a3a"></div>
+        </div>
+        <div class="designer-card">
+          <h4>📋 الحقول</h4>
+          <div class="toggle-row"><span>الشعار</span><label class="switch"><input type="checkbox" id="invShowLogo" checked><span class="slider"></span></label></div>
+          <div class="toggle-row"><span>بيانات الزبون</span><label class="switch"><input type="checkbox" id="invShowCustomer" checked><span class="slider"></span></label></div>
+          <div class="toggle-row"><span>كود المنتج</span><label class="switch"><input type="checkbox" id="invShowCode" checked><span class="slider"></span></label></div>
+          <div class="toggle-row"><span>الوحدة</span><label class="switch"><input type="checkbox" id="invShowUnit" checked><span class="slider"></span></label></div>
+          <div class="toggle-row"><span>السعر بالدولار</span><label class="switch"><input type="checkbox" id="invShowUSD"><span class="slider"></span></label></div>
+          <div class="toggle-row"><span>الملاحظات</span><label class="switch"><input type="checkbox" id="invShowNotes" checked><span class="slider"></span></label></div>
+          <div class="toggle-row"><span>الملخص</span><label class="switch"><input type="checkbox" id="invShowSummary" checked><span class="slider"></span></label></div>
+          <div class="toggle-row"><span>التذييل</span><label class="switch"><input type="checkbox" id="invShowFooter" checked><span class="slider"></span></label></div>
+        </div>
+        <div class="designer-card">
+          <h4>✍️ النصوص</h4>
+          <div class="form-group"><label>عنوان الفاتورة</label><input type="text" id="invTitle" value="فاتورة"></div>
+          <div class="form-group"><label>ملاحظة</label><textarea id="invNote" rows="2">⚠️ الأسعار نهائية. يُرجى الاحتفاظ بالفاتورة للاستبدال خلال 3 أيام.</textarea></div>
+          <div class="form-group"><label>رسالة الشكر</label><input type="text" id="invThanks" value="🙏 شكراً لتسوقكم من ماركت أدم"></div>
+          <div class="form-group"><label>النص الفرعي</label><input type="text" id="invFooterSub" value="نتمنى لكم تجربة تسوق ممتعة"></div>
+          <div class="form-group"><label>طريقة الدفع</label><input type="text" id="invPaymentMethod" value="نقداً عند التسليم (COD)"></div>
+        </div>
+      </div>
+      <div>
+        <div class="designer-card">
+          <h4>👁️ معاينة</h4>
+          <div class="designer-preview-wrap">
+            <div class="designer-preview-inner" id="designerPreviewInner">
+              <div class="invoice-print-template" id="designerPreviewTemplate"></div>
+            </div>
+          </div>
+          <div class="designer-actions">
+            <button class="btn btn-primary" id="saveDesignBtn">💾 حفظ</button>
+            <button class="btn btn-secondary" id="resetDesignBtn">↺ افتراضي</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- لائحة الأسعار -->
+  <div class="tab-content" id="priceListTab">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn btn-print btn-sm" id="printPriceListBtn">🖨️ طباعة</button>
+      <button class="btn btn-primary btn-sm" id="exportExcelBtn">📊 تصدير Excel</button>
+      <button class="btn btn-secondary btn-sm" id="exportCsvBtn">📄 تصدير CSV</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>الفئة</label><select id="plCategoryFilter"><option value="all">كل الفئات</option></select></div>
+      <div class="form-group"><label>حجم الخط (pt)</label><input type="number" id="plFontSize" value="8" min="6" max="14" step="0.5"></div>
+      <div class="form-group"><label>حجم الورق</label><select id="plPaper"><option value="A4" selected>A4</option><option value="A3">A3</option><option value="Letter">Letter</option></select></div>
+    </div>
+    <div class="form-row"><div class="form-group" style="flex:1 1 100%;"><label>ملاحظة أسفل اللائحة</label><input type="text" id="plFooterNote" value="الأسعار سارية حتى إشعار آخر — ماركت أدم"></div></div>
+    <div style="overflow:auto;background:#eceff1;border-radius:12px;padding:12px;"><div id="priceListPreview" class="pl-preview"></div></div>
+  </div>
+
+  <!-- الإشعارات -->
+  <div class="tab-content" id="notifsTab">
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn btn-secondary btn-sm" id="clearNotifsBtn">🗑️ مسح الكل</button>
+      <button class="btn btn-print btn-sm" id="printNotifsBtn">🖨️ طباعة الإشعارات</button>
+    </div>
+    <div id="notifsList"></div>
+  </div>
+
+  <!-- الطلبات -->
+  <div class="tab-content" id="ordersTab">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button class="btn btn-print btn-sm" id="printAllOrdersBtn">🖨️ طباعة كل الطلبات</button>
+      <button class="btn btn-danger btn-sm" id="deleteAllOrdersBtn">🗑️ حذف كل الطلبات</button>
+      <button class="btn btn-secondary btn-sm" id="markAllReadBtn">✅ وسم الكل كمقروء</button>
+    </div>
+    <h4>🧾 سجل الطلبات</h4>
+    <table id="ordersTable">
+      <thead><tr>
+        <th>رقم الطلب</th>
+        <th>التاريخ</th>
+        <th>الزبون</th>
+        <th>الهاتف</th>
+        <th>الإجمالي (ل.س)</th>
+        <th>الحالة</th>
+        <th>إجراءات</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<div class="invoice-template-wrapper" id="invoiceTemplateWrapper">
+  <div class="invoice-print-template" id="invoicePrintTemplate"></div>
+</div>
+<div id="priceListPrintArea"></div>
+<div id="notifsPrintArea"></div>
+
+<div class="modal-overlay" id="notifOverlay">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" id="notifCloseBtn">✕</button>
+    <div class="modal-header"><h2>🔔 الإشعارات</h2></div>
+    <div id="notifModalList"></div>
+  </div>
+</div>
+
+<div class="toast-msg" id="toastMsg">✓</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/invoice.js"></script>
+<script src="js/pricelist.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
