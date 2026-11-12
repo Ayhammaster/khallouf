@@ -1,0 +1,31 @@
+@media print{
+    /* طباعة الفاتورة */
+    body.printing-invoice *{visibility:hidden!important;}
+    body.printing-invoice .invoice-print-template,
+    body.printing-invoice .invoice-print-template *{visibility:visible!important;}
+    body.printing-invoice .invoice-print-template{
+      position:absolute!important;left:0!important;top:0!important;
+      width:100%!important;padding:15px!important;z-index:9999!important;
+    }
+    body.printing-invoice .invoice-template-wrapper{
+      position:static!important;left:0!important;z-index:9999!important;
+    }
+  
+    /* طباعة لائحة الأسعار */
+    body.printing-pricelist *{visibility:hidden!important;}
+    body.printing-pricelist #priceListPrintArea,
+    body.printing-pricelist #priceListPrintArea *{visibility:visible!important;}
+    body.printing-pricelist #priceListPrintArea{
+      position:absolute!important;left:0!important;top:0!important;
+      width:100%!important;z-index:9999!important;
+    }
+  
+    /* طباعة الإشعارات */
+    body.printing-notifs *{visibility:hidden!important;}
+    body.printing-notifs #notifsPrintArea,
+    body.printing-notifs #notifsPrintArea *{visibility:visible!important;}
+    body.printing-notifs #notifsPrintArea{
+      position:absolute!important;left:0!important;top:0!important;
+      width:100%!important;padding:10mm!important;z-index:9999!important;
+    }
+  }
